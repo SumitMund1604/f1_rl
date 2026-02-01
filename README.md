@@ -2,6 +2,22 @@
 
 A reinforcement learning environment for training an autonomous F1 racing agent using the Advantage Actor-Critic (A2C) algorithm with vectorized environments.
 
+## Tech Stack
+
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+![Gymnasium](https://img.shields.io/badge/Gymnasium-0.29+-000000?style=for-the-badge)
+![Pygame](https://img.shields.io/badge/Pygame-2.5+-green?style=for-the-badge)
+
+| Category | Technology |
+|----------|------------|
+| Language | Python 3.10+ |
+| Deep Learning | PyTorch |
+| RL Framework | Gymnasium |
+| Rendering | Pygame |
+| Visualization | Matplotlib |
+| Version Control | Git, GitHub |
+
 ## Overview
 
 This project implements a custom Gymnasium environment where an agent learns to:
@@ -11,6 +27,14 @@ This project implements a custom Gymnasium environment where an agent learns to:
 - Optimize racing line and speed
 
 The environment uses a 15-dimensional state space with distance sensors and a 5-action discrete control scheme.
+
+## Training Results
+
+### Training Progress
+![Training Progress](models/training_progress.png)
+
+### Final Training Results
+![Training Final](models/training_final.png)
 
 ## Project Structure
 
@@ -34,7 +58,7 @@ f1_rl/
 ### Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/f1_rl.git
+git clone https://github.com/SumitMund1604/f1_rl.git
 cd f1_rl
 pip install -r requirements.txt
 ```
@@ -127,6 +151,19 @@ The agent uses **Advantage Actor-Critic (A2C)** with:
 - Entropy bonus for exploration
 - Vectorized environments for parallel data collection
 - Separate actor and critic neural networks
+
+## Development Workflow
+
+```
+Environment Setup --> Data Collection --> Advantage Estimation --> Network Update --> Checkpoint Save --> Evaluation
+```
+
+1. **Environment Setup**: Initialize vectorized F1 racing environments
+2. **Data Collection**: Agent interacts with environments, collecting trajectories
+3. **Advantage Estimation**: Compute GAE for variance-reduced policy gradients
+4. **Network Update**: Update actor and critic networks using collected data
+5. **Checkpoint Save**: Periodically save model weights
+6. **Evaluation**: Test trained agent on unseen episodes
 
 ## Dependencies
 
