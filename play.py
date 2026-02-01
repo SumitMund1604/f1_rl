@@ -1,15 +1,3 @@
-"""
-F1 Racing RL - Play/Test Trained Agent
-
-Visualize a trained A2C agent racing on the F1 track.
-
-Usage:
-    python play.py                    # Play with latest model
-    python play.py --model best       # Play with best model
-    python play.py --episodes 5       # Play 5 episodes
-    python play.py --manual           # Manual keyboard control
-"""
-
 import argparse
 import os
 import sys
@@ -22,20 +10,12 @@ import pygame
 import gymnasium as gym
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from f1_env import F1RacingEnv
 
-
-# Register environment
-gym.register(
-    id="F1Racing-v0",
-    entry_point="f1_env:F1RacingEnv",
-    max_episode_steps=2000
-)
+gym.register(id="F1Racing-v0", entry_point="f1_env:F1RacingEnv", max_episode_steps=2000)
 
 
 class Actor(nn.Module):
-    """Actor network for inference"""
     def __init__(self, n_features: int, n_actions: int):
         super().__init__()
         self.net = nn.Sequential(
@@ -50,7 +30,6 @@ class Actor(nn.Module):
         return self.net(x)
     
     def select_action(self, state: np.ndarray) -> int:
-        """Select best action (greedy)"""
         with torch.no_grad():
             state_t = torch.FloatTensor(state).unsqueeze(0)
             logits = self.forward(state_t)
@@ -58,7 +37,6 @@ class Actor(nn.Module):
 
 
 def load_model(model_path: str, n_features: int, n_actions: int) -> Actor:
-    """Load trained actor network"""
     actor = Actor(n_features, n_actions)
     
     if os.path.exists(model_path):
@@ -73,15 +51,9 @@ def load_model(model_path: str, n_features: int, n_actions: int) -> Actor:
 
 
 def play_manual(env):
-    """Manual control mode with keyboard"""
     print("\n=== MANUAL CONTROL ===")
-    print("W/Up: Accelerate")
-    print("A/Left: Turn Left")
-    print("D/Right: Turn Right")
-    print("S/Down: Brake")
-    print("Space: Coast")
-    print("R: Reset")
-    print("Q/ESC: Quit")
+    print("W/Up: Accelerate | A/Left: Turn Left | D/Right: Turn Right")
+    print("S/Down: Brake | Space: Coast | R: Reset | Q/ESC: Quit")
     print("=" * 30)
     
     obs, info = env.reset()
@@ -91,8 +63,7 @@ def play_manual(env):
     while running:
         env.render()
         
-        # Get keyboard input
-        action = 4  # Default: coast
+        action = 4
         keys = pygame.key.get_pressed()
         
         for event in pygame.event.get():
@@ -106,22 +77,21 @@ def play_manual(env):
                     total_reward = 0
         
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            action = 0  # Accelerate
+            action = 0
         elif keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            action = 1  # Turn left
+            action = 1
         elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            action = 2  # Turn right
+            action = 2
         elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            action = 3  # Brake
+            action = 3
         elif keys[pygame.K_SPACE]:
-            action = 4  # Coast
+            action = 4
         
         obs, reward, terminated, truncated, info = env.step(action)
         total_reward += reward
         
         if terminated or truncated:
-            print(f"Episode ended! Total reward: {total_reward:.1f}, "
-                  f"Laps: {info['lap_count']}, Checkpoints: {info['checkpoint']}")
+            print(f"Episode ended! Reward: {total_reward:.1f}, Laps: {info['lap_count']}, Checkpoints: {info['checkpoint']}")
             obs, info = env.reset()
             total_reward = 0
     
@@ -129,7 +99,6 @@ def play_manual(env):
 
 
 def play_agent(env, actor: Actor, n_episodes: int = 5, fps: int = 60):
-    """Watch trained agent play"""
     print(f"\n=== AGENT DEMO ({n_episodes} episodes) ===")
     
     for episode in range(1, n_episodes + 1):
@@ -142,7 +111,6 @@ def play_agent(env, actor: Actor, n_episodes: int = 5, fps: int = 60):
         while True:
             env.render()
             
-            # Handle quit events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     env.close()
@@ -151,7 +119,6 @@ def play_agent(env, actor: Actor, n_episodes: int = 5, fps: int = 60):
                     env.close()
                     return
             
-            # Agent selects action
             action = actor.select_action(obs)
             obs, reward, terminated, truncated, info = env.step(action)
             
@@ -159,11 +126,7 @@ def play_agent(env, actor: Actor, n_episodes: int = 5, fps: int = 60):
             steps += 1
             
             if terminated or truncated:
-                print(f"Episode {episode} complete!")
-                print(f"  Steps: {steps}")
-                print(f"  Total Reward: {total_reward:.1f}")
-                print(f"  Laps: {info['lap_count']}")
-                print(f"  Checkpoints: {info['checkpoint']}")
+                print(f"Episode {episode}: Steps={steps}, Reward={total_reward:.1f}, Laps={info['lap_count']}, Checkpoints={info['checkpoint']}")
                 break
     
     print("\nDemo complete!")
@@ -171,31 +134,21 @@ def play_agent(env, actor: Actor, n_episodes: int = 5, fps: int = 60):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Play F1 Racing with trained agent')
-    
-    parser.add_argument('--model', type=str, default='final',
-                        choices=['final', 'checkpoint', 'best'],
-                        help='Which model to load')
-    parser.add_argument('--model_path', type=str, default=None,
-                        help='Custom path to model file')
-    parser.add_argument('--episodes', type=int, default=5,
-                        help='Number of episodes to play')
-    parser.add_argument('--manual', action='store_true',
-                        help='Manual keyboard control mode')
-    parser.add_argument('--fps', type=int, default=60,
-                        help='Rendering FPS')
-    parser.add_argument('--save_dir', type=str, default='models',
-                        help='Directory with saved models')
+    parser = argparse.ArgumentParser(description='Play F1 Racing')
+    parser.add_argument('--model', type=str, default='final', choices=['final', 'checkpoint', 'best'])
+    parser.add_argument('--model_path', type=str, default=None)
+    parser.add_argument('--episodes', type=int, default=5)
+    parser.add_argument('--manual', action='store_true')
+    parser.add_argument('--fps', type=int, default=60)
+    parser.add_argument('--save_dir', type=str, default='models')
     
     args = parser.parse_args()
     
-    # Create environment with rendering
     env = gym.make("F1Racing-v0", render_mode="human")
     
     if args.manual:
         play_manual(env)
     else:
-        # Determine model path
         if args.model_path:
             model_path = args.model_path
         elif args.model == 'final':
@@ -205,12 +158,10 @@ def main():
         else:
             model_path = os.path.join(args.save_dir, 'f1_a2c_best.pth')
         
-        # Load model
         obs_dim = env.observation_space.shape[0]
         act_dim = env.action_space.n
         actor = load_model(model_path, obs_dim, act_dim)
         
-        # Play
         play_agent(env, actor, args.episodes, args.fps)
 
 
